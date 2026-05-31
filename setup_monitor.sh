@@ -23,7 +23,11 @@ echo "-------------------------------------------"
 
 # 3. Core Updates and Repo Additions
 sudo apt update && sudo apt upgrade -y
-sudo apt install -y curl gnupg git python3-pip python3-requests speedtest-cli
+sudo apt install -y curl gnupg git python3-pip python3-requests
+
+# Install official Ookla speedtest CLI
+curl -s https://packagecloud.io/install/repositories/ookla/speedtest-cli/script.deb.sh | sudo bash
+sudo apt-get install -y speedtest
 
 # 4. Install and configure ZeroTier-One securely
 if ! command -v zerotier-cli &> /dev/null; then
@@ -41,7 +45,7 @@ sudo zerotier-cli join 633e31d8a24687c7
 # 5. Clone Target Git Repo
 REPO_DIR="$HOME/network_stats/repo"
 if [ ! -d "$REPO_DIR" ]; then
-    git clone https://github.com/therealwizywig/internet_pi_project.git "$REPO_DIR"
+    GIT_TERMINAL_PROMPT=0 git clone https://github.com/therealwizywig/network_stats.git "$REPO_DIR"
 fi
 
 echo "==========================================="

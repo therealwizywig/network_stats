@@ -165,18 +165,18 @@ def probe_netsuite(url):
         return "failed"
 
 def run_speedtest(server_id=None):
-    cmd = ["speedtest-cli", "--json"]
+    cmd = ["speedtest", "--format=json", "--accept-license", "--accept-gdpr"]
     if server_id:
-        cmd.extend(["--server", str(server_id)])
+        cmd.extend(["--server-id", str(server_id)])
     try:
         res = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
         if res.returncode != 0:
             return 0.0, 0.0, ""
         data = json.loads(res.stdout)
-        download = round(data.get("download", 0) / 1_000_000, 2)
-        upload = round(data.get("upload", 0) / 1_000_000, 2)
+        download = round(data["download"]["bandwidth"] * 8 / 1_000_000, 2)
+        upload = round(data["upload"]["bandwidth"] * 8 / 1_000_000, 2)
         server = data.get("server", {})
-        server_name = f"{server.get('sponsor', '')} ({server.get('name', '')})".strip(" ()")
+        server_name = f"{server.get('name', '')} ({server.get('location', '')})".strip(" ()")
         return download, upload, server_name
     except Exception:
         return 0.0, 0.0, ""
