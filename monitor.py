@@ -175,11 +175,22 @@ def run_speedtest(server_id=None):
         data = json.loads(res.stdout)
         download = round(data["download"]["bandwidth"] * 8 / 1_000_000, 2)
         upload = round(data["upload"]["bandwidth"] * 8 / 1_000_000, 2)
+        ping = data.get("ping", {})
+        dl_lat = data.get("download", {}).get("latency", {})
+        ul_lat = data.get("upload", {}).get("latency", {})
         server = data.get("server", {})
         server_name = f"{server.get('name', '')} ({server.get('location', '')})".strip(" ()")
-        return download, upload, server_name
+        return (
+            download, upload, server_name,
+            round(ping.get("latency", 0.0), 2),
+            round(ping.get("jitter", 0.0), 2),
+            round(dl_lat.get("iqm", 0.0), 2),
+            round(dl_lat.get("jitter", 0.0), 2),
+            round(ul_lat.get("iqm", 0.0), 2),
+            round(ul_lat.get("jitter", 0.0), 2),
+        )
     except Exception:
-        return 0.0, 0.0, ""
+        return 0.0, 0.0, "", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
 
 # --- MAIN EXECUTION ---
 def main():
@@ -234,6 +245,12 @@ def main():
             payload[f"download_mbps_{label}"] = 0.0
             payload[f"upload_mbps_{label}"] = 0.0
             payload[f"speedtest_server_{label}"] = ""
+            payload[f"speedtest_latency_{label}"] = 0.0
+            payload[f"speedtest_jitter_{label}"] = 0.0
+            payload[f"speedtest_dl_latency_{label}"] = 0.0
+            payload[f"speedtest_dl_jitter_{label}"] = 0.0
+            payload[f"speedtest_ul_latency_{label}"] = 0.0
+            payload[f"speedtest_ul_jitter_{label}"] = 0.0
         if show_progress: update_progress(90, "Network offline. Skipping Speedtest.")
     else:
         total_st = len(SPEEDTEST_SERVERS)
@@ -243,10 +260,16 @@ def main():
             pct = int(70 + (20 * (idx / total_st)))
             status = f"Speedtest ({label})..."
             if show_progress: update_progress(pct, status)
-            download, upload, server_name = run_speedtest(server_id)
+            download, upload, server_name, latency, jitter, dl_lat, dl_jitter, ul_lat, ul_jitter = run_speedtest(server_id)
             payload[f"download_mbps_{label}"] = download
             payload[f"upload_mbps_{label}"] = upload
             payload[f"speedtest_server_{label}"] = server_name
+            payload[f"speedtest_latency_{label}"] = latency
+            payload[f"speedtest_jitter_{label}"] = jitter
+            payload[f"speedtest_dl_latency_{label}"] = dl_lat
+            payload[f"speedtest_dl_jitter_{label}"] = dl_jitter
+            payload[f"speedtest_ul_latency_{label}"] = ul_lat
+            payload[f"speedtest_ul_jitter_{label}"] = ul_jitter
 
     payload["wan_status"] = "Online" if not is_offline else "Offline"
 
