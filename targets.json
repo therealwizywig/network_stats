@@ -11,6 +11,7 @@
     },
     "speedtest_servers": [
         {"label": "auto"},
-        {"label": "10050", "id": 10050}
+        {"label": "1776", "id": 1776, "name": "Chicago"}
+        
     ]
 }
