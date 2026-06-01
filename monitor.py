@@ -291,8 +291,7 @@ def main():
 
     rx_end, tx_end = get_net_bytes()
     payload["wan_status"] = "Online" if not is_offline else "Offline"
-    payload["run_data_rx_kb"] = round((rx_end - rx_start) / 1024, 2)
-    payload["run_data_tx_kb"] = round((tx_end - tx_start) / 1024, 2)
+    payload["run_data_mb"] = round((rx_end - rx_start + tx_end - tx_start) / (1024 * 1024), 2)
 
     if show_progress: update_progress(95, "Uploading telemetry...")
     
