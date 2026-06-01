@@ -48,6 +48,14 @@ if [ ! -d "$REPO_DIR" ]; then
     GIT_TERMINAL_PROMPT=0 git clone https://github.com/therealwizywig/network_stats.git "$REPO_DIR"
 fi
 
+# 6. Install systemd services
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+sudo cp "$SCRIPT_DIR/services/power_tracker.service" /etc/systemd/system/power_tracker.service
+sudo systemctl daemon-reload
+sudo systemctl enable power_tracker.service
+sudo systemctl start power_tracker.service
+echo "[✓] power_tracker service installed and started"
+
 echo "==========================================="
 echo " SETUP COMPLETE"
 echo " Run 'cat $CONFIG_FILE' to check identity metadata."

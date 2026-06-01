@@ -1,0 +1,12 @@
+[Unit]
+Description=Power Loss and Uptime Tracker
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /root/network_stats/repo/power_tracker.py
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target
