@@ -81,6 +81,22 @@ def update_from_git():
         except Exception:
             pass
 
+def get_net_bytes():
+    try:
+        res = subprocess.run(["ip", "route", "get", "8.8.8.8"], capture_output=True, text=True)
+        match = re.search(r"dev\s+(\S+)", res.stdout)
+        if not match:
+            return 0, 0
+        iface = match.group(1)
+        with open("/proc/net/dev") as f:
+            for line in f:
+                if line.strip().startswith(iface + ":"):
+                    parts = line.split()
+                    return int(parts[1]), int(parts[9])
+        return 0, 0
+    except Exception:
+        return 0, 0
+
 def get_connection_info():
     try:
         res = subprocess.run(["ip", "route", "get", "8.8.8.8"], capture_output=True, text=True)
@@ -204,6 +220,8 @@ def main():
     timestamp = get_utc_timestamp()
     uptime_sec = get_uptime_seconds()
 
+    rx_start, tx_start = get_net_bytes()
+
     if show_progress: update_progress(20, "Getting external IP...")
     external_ip, external_city = get_external_ip_info()
     connection_type, connection_speed = get_connection_info()
@@ -271,7 +289,10 @@ def main():
             payload[f"speedtest_ul_latency_{label}"] = ul_lat
             payload[f"speedtest_ul_jitter_{label}"] = ul_jitter
 
+    rx_end, tx_end = get_net_bytes()
     payload["wan_status"] = "Online" if not is_offline else "Offline"
+    payload["run_data_rx_kb"] = round((rx_end - rx_start) / 1024, 2)
+    payload["run_data_tx_kb"] = round((tx_end - tx_start) / 1024, 2)
 
     if show_progress: update_progress(95, "Uploading telemetry...")
     
