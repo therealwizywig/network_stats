@@ -29,12 +29,13 @@ def load_targets():
             data.get("target_servers", {}),
             data.get("probe_urls", {}),
             data.get("speedtest_servers", [{"label": "auto"}]),
+            data.get("run_speedtest", True),
         )
     except Exception as e:
         print(f"Warning: could not load {TARGETS_FILE}: {e}", file=sys.stderr)
-        return {}, {}, [{"label": "auto"}]
+        return {}, {}, [{"label": "auto"}], True
 
-TARGET_SERVERS, PROBE_URLS, SPEEDTEST_SERVERS = load_targets()
+TARGET_SERVERS, PROBE_URLS, SPEEDTEST_SERVERS, RUN_SPEEDTEST = load_targets()
 
 # --- PROGRESS BAR UTILITY ---
 def update_progress(percent, status_text=""):
@@ -257,7 +258,9 @@ def main():
             update_progress(current_pct, f"Probing {key}...")
         payload[f"probe_{key}"] = probe_netsuite(url)
 
-    if is_offline:
+    if not RUN_SPEEDTEST:
+        if show_progress: update_progress(90, "Speedtest disabled. Skipping.")
+    elif is_offline:
         for st in SPEEDTEST_SERVERS:
             label = st["label"]
             payload[f"download_mbps_{label}"] = 0.0
@@ -276,8 +279,7 @@ def main():
             label = st["label"]
             server_id = st.get("id")
             pct = int(70 + (20 * (idx / total_st)))
-            status = f"Speedtest ({label})..."
-            if show_progress: update_progress(pct, status)
+            if show_progress: update_progress(pct, f"Speedtest ({label})...")
             download, upload, server_name, latency, jitter, dl_lat, dl_jitter, ul_lat, ul_jitter = run_speedtest(server_id)
             payload[f"download_mbps_{label}"] = download
             payload[f"upload_mbps_{label}"] = upload
