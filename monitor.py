@@ -30,12 +30,14 @@ def load_targets():
             data.get("probe_urls", {}),
             data.get("speedtest_servers", [{"label": "auto"}]),
             data.get("run_speedtest", True),
+            data.get("speedtest_interval_minutes", 0),
         )
     except Exception as e:
         print(f"Warning: could not load {TARGETS_FILE}: {e}", file=sys.stderr)
-        return {}, {}, [{"label": "auto"}], True
+        return {}, {}, [{"label": "auto"}], True, 0
 
-TARGET_SERVERS, PROBE_URLS, SPEEDTEST_SERVERS, RUN_SPEEDTEST = load_targets()
+TARGET_SERVERS, PROBE_URLS, SPEEDTEST_SERVERS, RUN_SPEEDTEST, SPEEDTEST_INTERVAL = load_targets()
+SPEEDTEST_TIMESTAMP_FILE = "/tmp/last_speedtest"
 
 # --- PROGRESS BAR UTILITY ---
 def update_progress(percent, status_text=""):
@@ -181,6 +183,23 @@ def probe_netsuite(url):
     except Exception:
         return "failed"
 
+def speedtest_due():
+    if SPEEDTEST_INTERVAL <= 0:
+        return True
+    try:
+        with open(SPEEDTEST_TIMESTAMP_FILE) as f:
+            last_run = float(f.read().strip())
+        return (time.time() - last_run) >= SPEEDTEST_INTERVAL * 60
+    except Exception:
+        return True
+
+def mark_speedtest_ran():
+    try:
+        with open(SPEEDTEST_TIMESTAMP_FILE, 'w') as f:
+            f.write(str(time.time()))
+    except Exception:
+        pass
+
 def run_speedtest(server_id=None):
     cmd = ["speedtest", "--format=json", "--accept-license", "--accept-gdpr"]
     if server_id:
@@ -258,8 +277,8 @@ def main():
             update_progress(current_pct, f"Probing {key}...")
         payload[f"probe_{key}"] = probe_netsuite(url)
 
-    if not RUN_SPEEDTEST:
-        if show_progress: update_progress(90, "Speedtest disabled. Skipping.")
+    if not RUN_SPEEDTEST or not speedtest_due():
+        if show_progress: update_progress(90, "Speedtest skipped.")
     elif is_offline:
         for st in SPEEDTEST_SERVERS:
             label = st["label"]
@@ -290,6 +309,7 @@ def main():
             payload[f"speedtest_dl_jitter_{label}"] = dl_jitter
             payload[f"speedtest_ul_latency_{label}"] = ul_lat
             payload[f"speedtest_ul_jitter_{label}"] = ul_jitter
+        mark_speedtest_ran()
 
     rx_end, tx_end = get_net_bytes()
     payload["wan_status"] = "Online" if not is_offline else "Offline"

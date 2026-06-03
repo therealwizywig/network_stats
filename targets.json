@@ -9,7 +9,8 @@
         "netsuite": "https://system.netsuite.com/",
         "salesforce": "https://login.salesforce.com/"
     },
-    "run_speedtest": true,
+    "run_speedtest": false,
+    "speedtest_interval_minutes": 60,
     "speedtest_servers": [
         {"label": "auto"},
         {"label": "1776", "id": 1776, "name": "Chicago"}
