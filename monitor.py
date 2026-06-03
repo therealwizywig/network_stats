@@ -277,20 +277,24 @@ def main():
             update_progress(current_pct, f"Probing {key}...")
         payload[f"probe_{key}"] = probe_netsuite(url)
 
-    if not RUN_SPEEDTEST or not speedtest_due():
-        if show_progress: update_progress(90, "Speedtest skipped.")
-    elif is_offline:
+    def zero_speedtest_fields():
         for st in SPEEDTEST_SERVERS:
             label = st["label"]
-            payload[f"download_mbps_{label}"] = 0.0
-            payload[f"upload_mbps_{label}"] = 0.0
+            payload[f"download_mbps_{label}"] = ""
+            payload[f"upload_mbps_{label}"] = ""
             payload[f"speedtest_server_{label}"] = ""
-            payload[f"speedtest_latency_{label}"] = 0.0
-            payload[f"speedtest_jitter_{label}"] = 0.0
-            payload[f"speedtest_dl_latency_{label}"] = 0.0
-            payload[f"speedtest_dl_jitter_{label}"] = 0.0
-            payload[f"speedtest_ul_latency_{label}"] = 0.0
-            payload[f"speedtest_ul_jitter_{label}"] = 0.0
+            payload[f"speedtest_latency_{label}"] = ""
+            payload[f"speedtest_jitter_{label}"] = ""
+            payload[f"speedtest_dl_latency_{label}"] = ""
+            payload[f"speedtest_dl_jitter_{label}"] = ""
+            payload[f"speedtest_ul_latency_{label}"] = ""
+            payload[f"speedtest_ul_jitter_{label}"] = ""
+
+    if not RUN_SPEEDTEST or not speedtest_due():
+        zero_speedtest_fields()
+        if show_progress: update_progress(90, "Speedtest skipped.")
+    elif is_offline:
+        zero_speedtest_fields()
         if show_progress: update_progress(90, "Network offline. Skipping Speedtest.")
     else:
         total_st = len(SPEEDTEST_SERVERS)
@@ -328,11 +332,17 @@ def main():
     if not upload_success:
         file_exists = os.path.isfile(CSV_FILE)
         try:
+            if file_exists:
+                with open(CSV_FILE, newline='') as f:
+                    existing_fields = list(csv.DictReader(f).fieldnames or [])
+                all_fields = existing_fields + [k for k in payload.keys() if k not in existing_fields]
+            else:
+                all_fields = list(payload.keys())
             with open(CSV_FILE, mode='a', newline='') as f:
-                writer = csv.DictWriter(f, fieldnames=payload.keys())
+                writer = csv.DictWriter(f, fieldnames=all_fields, extrasaction='ignore')
                 if not file_exists:
                     writer.writeheader()
-                writer.writerow(payload)
+                writer.writerow({k: payload.get(k, "") for k in all_fields})
         except Exception as e:
             print(f"\nFailed writing to local safety buffer: {e}", file=sys.stderr)
 
