@@ -23,7 +23,13 @@ echo "-------------------------------------------"
 
 # 3. Core Updates and Repo Additions
 sudo apt update && sudo apt upgrade -y
-sudo apt install -y curl gnupg git python3-pip python3-requests
+sudo apt install -y curl gnupg git python3-pip python3-requests ethtool
+
+# Fix bcmgenet driver wedge bug on Pi 4 under heavy network load
+sudo ethtool -G eth0 tx 256 2>/dev/null || true
+# Persist the fix across reboots
+echo 'ACTION=="add", SUBSYSTEM=="net", KERNEL=="eth0", RUN+="/sbin/ethtool -G eth0 tx 256"' \
+    | sudo tee /etc/udev/rules.d/99-bcmgenet-fix.rules > /dev/null
 
 # Install official Ookla speedtest CLI
 curl -s https://packagecloud.io/install/repositories/ookla/speedtest-cli/script.deb.sh | sudo bash

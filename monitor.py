@@ -156,28 +156,23 @@ def parse_ping(host):
     except Exception:
         return 0.0, 100.0
 
-def probe_netsuite(url):
+def probe_url(url):
     try:
-        res = subprocess.run(
-            ["python3", "-c", f"import requests; print(requests.get('{url}').status_code)"],
-            capture_output=True, text=True, timeout=10
-        )
-        if res.returncode != 0:
-            stderr = res.stderr
-            if "SSLError" in stderr:
-                return "ssl_error"
-            if "NameResolutionError" in stderr or "Name or service not known" in stderr:
-                return "dns_failed"
-            if "Timeout" in stderr or "timed out" in stderr:
-                return "timeout"
-            return "failed"
-        status_code = int(res.stdout.strip())
-        if status_code >= 400:
+        response = requests.get(url, timeout=5)
+        if response.status_code >= 400:
             return "error"
+        if response.history:
+            return "redirected"
         return "reached"
-    except subprocess.TimeoutExpired:
+    except requests.exceptions.SSLError:
+        return "ssl_error"
+    except requests.exceptions.ConnectionError as e:
+        if "NameResolutionError" in str(e) or "Name or service not known" in str(e):
+            return "dns_failed"
+        return "failed"
+    except requests.exceptions.Timeout:
         return "timeout"
-    except Exception:
+    except requests.exceptions.RequestException:
         return "failed"
 
 
@@ -256,7 +251,7 @@ def main():
         if show_progress:
             current_pct = int(55 + (10 * (idx / total_probes)))
             update_progress(current_pct, f"Probing {key}...")
-        payload[f"probe_{key}"] = probe_netsuite(url)
+        payload[f"probe_{key}"] = probe_url(url)
 
     def zero_speedtest_fields():
         for st in SPEEDTEST_SERVERS:
