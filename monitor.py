@@ -11,7 +11,6 @@ import requests
 # --- CONFIGURATION PATHS ---
 CSV_FILE = os.path.expanduser("~/network_stats/speedtest_results.csv")
 REPO_DIR = os.path.expanduser("~/network_stats/repo")
-ENV_FILE = os.path.expanduser("~/network_stats/device_env.conf")
 TARGETS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "targets.json")
 
 INGEST_URL = "https://telemetry-ingest-32461014139.us-central1.run.app/telemetry"
@@ -25,6 +24,7 @@ def load_targets():
         with open(TARGETS_FILE, 'r') as f:
             data = json.load(f)
         return (
+            data.get("device_id", "test-device-default"),
             data.get("target_servers", {}),
             data.get("probe_urls", {}),
             data.get("speedtest_servers", [{"label": "auto"}]),
@@ -32,9 +32,9 @@ def load_targets():
         )
     except Exception as e:
         print(f"Warning: could not load {TARGETS_FILE}: {e}", file=sys.stderr)
-        return {}, {}, [{"label": "auto"}], True
+        return "test-device-default", {}, {}, [{"label": "auto"}], True
 
-TARGET_SERVERS, PROBE_URLS, SPEEDTEST_SERVERS, RUN_SPEEDTEST = load_targets()
+DEVICE_ID, TARGET_SERVERS, PROBE_URLS, SPEEDTEST_SERVERS, RUN_SPEEDTEST = load_targets()
 
 # --- PROGRESS BAR UTILITY ---
 def update_progress(percent, status_text=""):
@@ -46,22 +46,6 @@ def update_progress(percent, status_text=""):
     status_text = status_text.ljust(35)
     sys.stdout.write(f"\r[{bar}] {percent}% | {status_text}")
     sys.stdout.flush()
-
-# --- DYNAMIC CONFIGURATION LOADER ---
-def load_device_id():
-    default_fallback = "test-device-default"
-    if not os.path.exists(ENV_FILE):
-        return default_fallback
-    try:
-        with open(ENV_FILE, 'r') as f:
-            for line in f:
-                if line.strip().startswith("DEVICE_ID="):
-                    match = re.search(r'DEVICE_ID=["\']?([^"\']+)["\']?', line)
-                    if match:
-                        return match.group(1)
-    except Exception:
-        pass
-    return default_fallback
 
 # --- CORE UTILITIES ---
 def get_utc_timestamp():
@@ -212,7 +196,6 @@ def main():
     update_from_git()
     
     if show_progress: update_progress(15, "Loading configuration...")
-    device_id = load_device_id()
     timestamp = get_utc_timestamp()
     uptime_sec = get_uptime_seconds()
 
@@ -223,7 +206,7 @@ def main():
     connection_type, connection_speed = get_connection_info()
 
     payload = {
-        "device_id": device_id,
+        "device_id": DEVICE_ID,
         "ping_timestamp": timestamp,
         "pi_uptime": uptime_sec,
         "external_ip": external_ip,

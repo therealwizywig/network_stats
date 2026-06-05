@@ -10,20 +10,13 @@ DEFAULT_ID="test-device-01"
 read -rp "Enter unique Device ID [Press Enter for '$DEFAULT_ID']: " USER_ID
 DEVICE_ID=${USER_ID:-$DEFAULT_ID}
 
-# 2. Save Configuration File
-CONFIG_FILE="$HOME/network_stats/device_env.conf"
-mkdir -p "$(dirname "$CONFIG_FILE")"
-echo "DEVICE_ID=\"$DEVICE_ID\"" > "$CONFIG_FILE"
-echo "[✓] Configuration saved to $CONFIG_FILE"
-echo "    (You can manually edit this file at any time to change the ID)"
-
 echo "-------------------------------------------"
 echo "Provisioning System Dependencies..."
 echo "-------------------------------------------"
 
 # 3. Core Updates and Repo Additions
 sudo apt update && sudo apt upgrade -y
-sudo apt install -y curl gnupg git python3-pip python3-requests ethtool
+sudo apt install -y curl gnupg git python3-pip python3-requests ethtool dnsutils
 
 # Fix bcmgenet driver wedge bug on Pi 4 under heavy network load
 sudo ethtool -G eth0 tx 256 2>/dev/null || true
@@ -54,7 +47,19 @@ if [ ! -d "$REPO_DIR" ]; then
     GIT_TERMINAL_PROMPT=0 git clone https://github.com/therealwizywig/network_stats.git "$REPO_DIR"
 fi
 
-# 6. Install systemd services
+# 6. Write Device ID into targets.json
+python3 -c "
+import json
+path = '$REPO_DIR/targets.json'
+with open(path, 'r') as f:
+    data = json.load(f)
+data['device_id'] = '$DEVICE_ID'
+with open(path, 'w') as f:
+    json.dump(data, f, indent=4)
+"
+echo "[✓] Device ID '$DEVICE_ID' saved to targets.json"
+
+# 7. Install systemd services
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 sudo cp "$SCRIPT_DIR/services/power_tracker.service" /etc/systemd/system/power_tracker.service
 sudo systemctl daemon-reload
@@ -64,5 +69,5 @@ echo "[✓] power_tracker service installed and started"
 
 echo "==========================================="
 echo " SETUP COMPLETE"
-echo " Run 'cat $CONFIG_FILE' to check identity metadata."
+echo " Device ID '$DEVICE_ID' is stored in $REPO_DIR/targets.json"
 echo "==========================================="
