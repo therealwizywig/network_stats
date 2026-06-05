@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -e
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 echo "==========================================="
 echo "   Raspberry Pi Network Suite Setup"
 echo "==========================================="
@@ -48,19 +50,18 @@ if [ ! -d "$REPO_DIR" ]; then
 fi
 
 # 6. Write Device ID into targets.json
-python3 -c "
-import json
-path = '$REPO_DIR/targets.json'
+python3 - "$SCRIPT_DIR/targets.json" "$DEVICE_ID" << 'EOF'
+import json, sys
+path, device_id = sys.argv[1], sys.argv[2]
 with open(path, 'r') as f:
     data = json.load(f)
-data['device_id'] = '$DEVICE_ID'
+data['device_id'] = device_id
 with open(path, 'w') as f:
     json.dump(data, f, indent=4)
-"
+EOF
 echo "[✓] Device ID '$DEVICE_ID' saved to targets.json"
 
 # 7. Install systemd services
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 sudo cp "$SCRIPT_DIR/services/power_tracker.service" /etc/systemd/system/power_tracker.service
 sudo systemctl daemon-reload
 sudo systemctl enable power_tracker.service
