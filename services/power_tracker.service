@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/python3 /root/network_stats/repo/power_tracker.py
+ExecStart=/bin/bash /root/network_stats/repo/power_tracker.sh
 Restart=always
 User=root
 
