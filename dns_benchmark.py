@@ -109,16 +109,12 @@ def main():
 
     payload["dns_avg_ms"] = round(sum(times) / len(times), 2) if times else ""
 
-    uploaded = False
     try:
-        response = requests.post(INGEST_URL, json=payload, headers=INGEST_HEADERS, timeout=10)
-        if response.status_code in [200, 201, 202]:
-            uploaded = True
+        requests.post(INGEST_URL, json=payload, headers=INGEST_HEADERS, timeout=10)
     except Exception:
         pass
 
-    if not uploaded:
-        write_csv(payload)
+    write_csv(payload)
 
     mark_ran()
 

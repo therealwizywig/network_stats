@@ -11,7 +11,7 @@
         "salesforce": "https://login.salesforce.com/"
     },
     "dns_benchmark": {
-        "enabled": false,
+        "enabled": true,
         "interval_minutes": 60,
         "domains": [
             "google.com", "amazon.com", "facebook.com",
