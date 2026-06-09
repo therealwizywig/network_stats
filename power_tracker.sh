@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Directory and file paths
-TRACK_DIR="/var/log/power_tracker"
+TRACK_DIR="$HOME/network_stats/logs"
 CSV_FILE="$TRACK_DIR/power_log.csv"
 HEARTBEAT_FILE="$TRACK_DIR/last_heartbeat.txt"
 LAST_BOOT_FILE="$TRACK_DIR/last_boot.txt"

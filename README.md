@@ -61,7 +61,7 @@ Run on a schedule (e.g. via cron every 5 minutes). Each run collects:
 | `pi_uptime` | Seconds since last boot |
 | `run_data_mb` | Total MB of data used by this monitor run |
 
-Results are sent to the telemetry ingest endpoint. If the upload fails, they are saved locally to `~/network_stats/speedtest_results.csv` as a fallback buffer.
+Results are sent to the telemetry ingest endpoint. If the upload fails, they are saved locally to `~/network_stats/logs/speedtest_results.csv` as a fallback buffer.
 
 ### `dns_benchmark.py` — DNS Performance Benchmark
 
@@ -72,7 +72,7 @@ Run on a schedule. Measures how long your configured DNS server takes to resolve
 | `dns_ms_{domain}` | Query time in ms for each domain (e.g. `dns_ms_google.com`) |
 | `dns_avg_ms` | Average query time across all domains |
 
-Results are sent to the telemetry endpoint or saved to `~/network_stats/dns_benchmark_results.csv` on failure.
+Results are sent to the telemetry endpoint or saved to `~/network_stats/logs/dns_benchmark_results.csv` on failure.
 
 ### `power_tracker.service` — Power Loss Tracker
 
@@ -81,7 +81,7 @@ A systemd service that runs continuously in the background. It writes a heartbea
 - **Uptime** of the previous session (how long it ran before power was lost)
 - **Downtime** (how long the Pi was off)
 
-Results are logged to `/var/log/power_tracker/power_log.csv`.
+Results are logged to `~/network_stats/logs/power_log.csv`.
 
 The heartbeat is flushed to disk with `sync` immediately after each write so that even a sudden power loss captures an accurate last-seen time.
 

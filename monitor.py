@@ -9,9 +9,10 @@ from datetime import datetime, timezone
 import requests
 
 # --- CONFIGURATION PATHS ---
-CSV_FILE = os.path.expanduser("~/network_stats/speedtest_results.csv")
+CSV_FILE = os.path.expanduser("~/network_stats/logs/speedtest_results.csv")
 REPO_DIR = os.path.expanduser("~/network_stats/repo")
 TARGETS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "targets.json")
+os.makedirs(os.path.dirname(CSV_FILE), exist_ok=True)
 
 INGEST_URL = "https://telemetry-ingest-32461014139.us-central1.run.app/telemetry"
 INGEST_HEADERS = {

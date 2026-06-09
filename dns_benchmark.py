@@ -10,7 +10,8 @@ from datetime import datetime, timezone
 import requests
 
 TARGETS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "targets.json")
-CSV_FILE = os.path.expanduser("~/network_stats/dns_benchmark_results.csv")
+CSV_FILE = os.path.expanduser("~/network_stats/logs/dns_benchmark_results.csv")
+os.makedirs(os.path.dirname(CSV_FILE), exist_ok=True)
 TIMESTAMP_FILE = "/tmp/last_dns_benchmark"
 
 INGEST_URL = "https://telemetry-ingest-32461014139.us-central1.run.app/telemetry"
