@@ -29,10 +29,11 @@ def load_config():
             cfg.get("enabled", False),
             cfg.get("interval_minutes", 60),
             cfg.get("domains", []),
+            cfg.get("servers", [{"label": "default"}]),
         )
     except Exception as e:
         print(f"Warning: could not load {TARGETS_FILE}: {e}", file=sys.stderr)
-        return "test-device-default", False, 60, []
+        return "test-device-default", False, 60, [], [{"label": "default"}]
 
 def is_due(interval_minutes):
     if interval_minutes <= 0:
@@ -51,12 +52,13 @@ def mark_ran():
     except Exception:
         pass
 
-def query_dns(domain):
+def query_dns(domain, server_ip=None):
+    cmd = ["dig"]
+    if server_ip:
+        cmd.append(f"@{server_ip}")
+    cmd.append(domain)
     try:
-        res = subprocess.run(
-            ["dig", domain],
-            capture_output=True, text=True, timeout=10
-        )
+        res = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
         match = re.search(r"Query time: (\d+) msec", res.stdout)
         return int(match.group(1)) if match else ""
     except Exception:
@@ -83,7 +85,7 @@ def write_csv(payload):
         print(f"Failed writing to CSV: {e}", file=sys.stderr)
 
 def main():
-    device_id, enabled, interval_minutes, domains = load_config()
+    device_id, enabled, interval_minutes, domains, servers = load_config()
 
     if not enabled:
         sys.exit(0)
@@ -100,14 +102,16 @@ def main():
         "dns_timestamp": get_utc_timestamp(),
     }
 
-    times = []
-    for domain in domains:
-        ms = query_dns(domain)
-        payload[f"dns_ms_{domain}"] = ms
-        if isinstance(ms, int):
-            times.append(ms)
-
-    payload["dns_avg_ms"] = round(sum(times) / len(times), 2) if times else ""
+    for server in servers:
+        label = server["label"]
+        ip = server.get("ip")
+        times = []
+        for domain in domains:
+            ms = query_dns(domain, ip)
+            payload[f"dns_ms_{label}_{domain}"] = ms
+            if isinstance(ms, int):
+                times.append(ms)
+        payload[f"dns_avg_ms_{label}"] = round(sum(times) / len(times), 2) if times else ""
 
     try:
         requests.post(INGEST_URL, json=payload, headers=INGEST_HEADERS, timeout=10)

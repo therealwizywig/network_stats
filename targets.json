@@ -16,6 +16,11 @@
         "domains": [
             "google.com", "amazon.com", "facebook.com",
             "netflix.com", "github.com", "wikipedia.org", "reddit.com"
+        ],
+        "servers": [
+            {"label": "default"},
+            {"label": "cloudflare", "ip": "1.1.1.1"},
+            {"label": "google_dns", "ip": "8.8.8.8"}
         ]
     },
     "run_speedtest": false,
