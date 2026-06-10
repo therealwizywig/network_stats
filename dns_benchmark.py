@@ -53,6 +53,22 @@ def mark_ran():
     except Exception:
         pass
 
+def get_net_bytes():
+    try:
+        res = subprocess.run(["ip", "route", "get", "8.8.8.8"], capture_output=True, text=True)
+        match = re.search(r"dev\s+(\S+)", res.stdout)
+        if not match:
+            return 0, 0
+        iface = match.group(1)
+        with open("/proc/net/dev") as f:
+            for line in f:
+                if line.strip().startswith(iface + ":"):
+                    parts = line.split()
+                    return int(parts[1]), int(parts[9])
+        return 0, 0
+    except Exception:
+        return 0, 0
+
 def query_dns(domain, server_ip=None):
     cmd = ["dig"]
     if server_ip:
@@ -98,6 +114,8 @@ def main():
         print("No domains configured for dns_benchmark.", file=sys.stderr)
         sys.exit(1)
 
+    rx_start, tx_start = get_net_bytes()
+
     payload = {
         "device_id": device_id,
         "dns_timestamp": get_utc_timestamp(),
@@ -113,6 +131,9 @@ def main():
             if isinstance(ms, int):
                 times.append(ms)
         payload[f"dns_avg_ms_{label}"] = round(sum(times) / len(times), 2) if times else ""
+
+    rx_end, tx_end = get_net_bytes()
+    payload["run_data_mb"] = round((rx_end - rx_start + tx_end - tx_start) / (1024 * 1024), 2)
 
     try:
         requests.post(INGEST_URL, json=payload, headers=INGEST_HEADERS, timeout=10)
