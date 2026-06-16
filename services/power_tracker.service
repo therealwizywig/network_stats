@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/bin/bash /root/network_stats/repo/power_tracker.sh
+ExecStart=/bin/bash /root/network_stats/power_tracker.sh
 Restart=always
 User=root
 

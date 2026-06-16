@@ -23,6 +23,7 @@
             {"label": "google_dns", "ip": "8.8.8.8"}
         ]
     },
+    "monitor_interval_minutes": 5,
     "run_speedtest": false,
     "speedtest_servers": [
         {"label": "auto"},

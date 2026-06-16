@@ -10,7 +10,7 @@ import requests
 
 # --- CONFIGURATION PATHS ---
 CSV_FILE = os.path.expanduser("~/network_stats/logs/speedtest_results.csv")
-REPO_DIR = os.path.expanduser("~/network_stats/repo")
+REPO_DIR = os.path.expanduser("~/network_stats")
 TARGETS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "targets.json")
 os.makedirs(os.path.dirname(CSV_FILE), exist_ok=True)
 
