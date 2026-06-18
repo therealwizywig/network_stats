@@ -9,8 +9,9 @@ import time
 from datetime import datetime, timezone
 import requests
 
-TARGETS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "targets.json")
-CSV_FILE = os.path.expanduser("~/network_stats/logs/dns_benchmark_results.csv")
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+TARGETS_FILE = os.path.join(_SCRIPT_DIR, "targets.json")
+CSV_FILE = os.path.join(_SCRIPT_DIR, "logs", "dns_benchmark_results.csv")
 os.makedirs(os.path.dirname(CSV_FILE), exist_ok=True)
 TIMESTAMP_FILE = "/tmp/last_dns_benchmark"
 

@@ -17,7 +17,7 @@ from datetime import datetime, timezone, timedelta
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 TARGETS_FILE = os.path.join(SCRIPT_DIR, "targets.json")
-LOG_DIR = os.path.expanduser("~/network_stats/logs")
+LOG_DIR = os.path.join(SCRIPT_DIR, "logs")
 CSV_FILE = os.path.join(LOG_DIR, "power_log.csv")
 HEARTBEAT_FILE = os.path.join(LOG_DIR, "last_heartbeat.txt")
 LAST_BOOT_FILE = os.path.join(LOG_DIR, "last_boot.txt")
