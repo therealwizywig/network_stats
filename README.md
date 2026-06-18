@@ -75,13 +75,15 @@ Invoked by cron on the same schedule as `monitor.py`, but only actually runs bas
 
 Results are sent to the telemetry endpoint and always written to `~/network_stats/logs/dns_benchmark_results.csv`.
 
-### `power_tracker.sh` — Power Loss Tracker
+### `power_tracker.py` — Per-Minute Uptime Tracker
 
 Runs as two cron jobs:
-- **`@reboot`** — on every boot, calculates uptime and downtime from the previous session and logs a row to CSV
-- **Every minute** — writes the current timestamp as a heartbeat, flushed immediately to disk with `sync`
+- **`@reboot`** — on every boot, backfills one `offline` row per missed minute since the last heartbeat (capped at 7 days), then writes one `online` row for the current minute
+- **Every minute** — writes one `online` row and updates the heartbeat file
 
-Results are logged to `~/network_stats/logs/power_log.csv`.
+Each row: `{device_id, timestamp, status}` — status is `"online"` or `"offline"`. Rows are streamed to BigQuery. If BigQuery is unavailable or not configured, rows fall back to `~/network_stats/logs/power_log.csv`.
+
+This produces a complete per-minute time series suitable for charting uptime in Looker Studio or any BigQuery-connected BI tool.
 
 ---
 

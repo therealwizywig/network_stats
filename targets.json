@@ -28,6 +28,5 @@
     "speedtest_servers": [
         {"label": "auto"},
         {"label": "1776", "id": 1776, "name": "Chicago"}
-        
     ]
 }
