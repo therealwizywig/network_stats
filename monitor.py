@@ -169,7 +169,7 @@ def run_speedtest(server_id=None):
     try:
         res = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
         if res.returncode != 0:
-            return 0.0, 0.0, ""
+            return None, None, None, None, None, None, None, None, None
         data = json.loads(res.stdout)
         download = round(data["download"]["bandwidth"] * 8 / 1_000_000, 2)
         upload = round(data["upload"]["bandwidth"] * 8 / 1_000_000, 2)
@@ -188,7 +188,7 @@ def run_speedtest(server_id=None):
             round(ul_lat.get("jitter", 0.0), 2),
         )
     except Exception:
-        return 0.0, 0.0, "", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+        return None, None, None, None, None, None, None, None, None
 
 # --- MAIN EXECUTION ---
 def main():
@@ -241,15 +241,15 @@ def main():
     def zero_speedtest_fields():
         for st in SPEEDTEST_SERVERS:
             label = st["label"]
-            payload[f"download_mbps_{label}"] = ""
-            payload[f"upload_mbps_{label}"] = ""
-            payload[f"speedtest_server_{label}"] = ""
-            payload[f"speedtest_latency_{label}"] = ""
-            payload[f"speedtest_jitter_{label}"] = ""
-            payload[f"speedtest_dl_latency_{label}"] = ""
-            payload[f"speedtest_dl_jitter_{label}"] = ""
-            payload[f"speedtest_ul_latency_{label}"] = ""
-            payload[f"speedtest_ul_jitter_{label}"] = ""
+            payload[f"download_mbps_{label}"] = None
+            payload[f"upload_mbps_{label}"] = None
+            payload[f"speedtest_server_{label}"] = None
+            payload[f"speedtest_latency_{label}"] = None
+            payload[f"speedtest_jitter_{label}"] = None
+            payload[f"speedtest_dl_latency_{label}"] = None
+            payload[f"speedtest_dl_jitter_{label}"] = None
+            payload[f"speedtest_ul_latency_{label}"] = None
+            payload[f"speedtest_ul_jitter_{label}"] = None
 
     if not RUN_SPEEDTEST:
         zero_speedtest_fields()
