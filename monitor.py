@@ -18,7 +18,7 @@ os.makedirs(os.path.dirname(CSV_FILE), exist_ok=True)
 INGEST_URL = "https://telemetry-ingest-32461014139.us-central1.run.app/telemetry"
 INGEST_HEADERS = {
     "Content-Type": "application/json",
-    "INGEST_KEY": "UDE_rex!qhp*eby6kry"
+    "X-Ingest-Key": "UDE_rex!qhp*eby6kry"
 }
 
 def load_targets():

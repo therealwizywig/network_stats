@@ -25,7 +25,7 @@ LAST_BOOT_FILE = os.path.join(LOG_DIR, "last_boot.txt")
 INGEST_URL = "https://telemetry-ingest-32461014139.us-central1.run.app/telemetry"
 INGEST_HEADERS = {
     "Content-Type": "application/json",
-    "INGEST_KEY": "UDE_rex!qhp*eby6kry"
+    "X-Ingest-Key": "UDE_rex!qhp*eby6kry"
 }
 
 BACKFILL_CAP_MINUTES = 10_080  # 7 days
