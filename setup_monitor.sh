@@ -40,7 +40,7 @@ sudo systemctl enable zerotier-one
 sudo systemctl start zerotier-one
 
 echo "[✓] Core systems ready. Joining ZeroTier network..."
-sudo zerotier-cli join 633e31d8a24687c7
+sudo zerotier-cli join 0e45f76cd37ffa06
 
 # 4. Clone or update repo
 NS_DIR="$HOME/network_stats"
