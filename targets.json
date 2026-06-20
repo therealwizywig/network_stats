@@ -24,6 +24,7 @@
         ]
     },
     "monitor_interval_minutes": 5,
+    "power_tracker_upload_interval_minutes": 60,
     "run_speedtest": false,
     "speedtest_servers": [
         {"label": "auto"},
