@@ -22,7 +22,7 @@ CSV_FILE = os.path.join(LOG_DIR, "power_log.csv")
 HEARTBEAT_FILE = os.path.join(LOG_DIR, "last_heartbeat.txt")
 LAST_BOOT_FILE = os.path.join(LOG_DIR, "last_boot.txt")
 
-INGEST_URL = "https://telemetry-ingest-32461014139.us-central1.run.app/telemetry"
+INGEST_URL = "https://telemetry-ingest-32461014139.us-central1.run.app/power"
 INGEST_HEADERS = {
     "Content-Type": "application/json",
     "X-Ingest-Key": "UDE_rex!qhp*eby6kry"
